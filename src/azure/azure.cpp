@@ -4,7 +4,7 @@ esp_err_t __azureespret__;
 #define NVS_CHECK(x)          \
     __azureespret__ = x;           \
     if (__azureespret__ != ESP_OK) \
-    {                         \
+    {   log_d("NVS ERR CODE=%d\n\r",x);                      \
         nvs_close(nvs_arg);   \
         log_e("Check Err");   \
         return __azureespret__;    \
@@ -13,8 +13,8 @@ esp_err_t __azureespret__;
 #define ESP_CHECK(x)          \
     __azureespret__ = x;           \
     if (__azureespret__ != ESP_OK) \
-    {                         \
-        log_e("Check Err");   \
+    {       log_e("Check Err");   \
+            log_d("ESP ERR CODE=%d\n\r" , x);  \
         return __azureespret__;    \
     }
 
@@ -152,6 +152,8 @@ esp_err_t Azure::AuthorizationRequest()
     if ((*_json_doc).containsKey("error"))
     {
         log_e("Error occurred. Description: %s", (*_json_doc)["error_description"].as<String>().c_str());
+        log_d("Error occurred. Description: %s", (*_json_doc)["error_description"].as<String>().c_str());
+
         _err_info = "Error occurred. Description: " + (*_json_doc)["error_description"].as<String>();
         return ESP_FAIL;
     }
@@ -222,18 +224,21 @@ esp_err_t Azure::getAuthorizationStatus()
         {
             _err_info = "User declined";
             log_e("User declined.");
+            log_d("User declined.");
             return AUTH_STATUS_DECLINED;
         }
         else if (err.indexOf("expired_token") >= 0)
         {
             _err_info = "Timeout";
             log_e("Timeout.");
+            log_d("Timeout.");
             return AUTH_STATUS_TIMEOUT;
         }
         else
         {
             _err_info = "Other errors, please check the log";
             log_e("Error occurred. Description: %s", (*_json_doc)["error_description"].as<String>().c_str());
+            log_d("Error occurred. Description: %s", (*_json_doc)["error_description"].as<String>().c_str());
             return AUTH_STATUS_FAILED;
         }
     }
@@ -579,8 +584,10 @@ esp_err_t Azure::saveData()
     log_d("saving data");
     nvs_handle nvs_arg;
     NVS_CHECK(nvs_open("azure data", NVS_READWRITE, &nvs_arg));
+    //NVS_CHECK(nvs_erase_key(nvs_arg);
     time(&_time_stamp);
     NVS_CHECK(nvs_set_i64(nvs_arg, "expire time", _time_stamp + _expires_in - 60));
+    NVS_CHECK(nvs_commit(nvs_arg));
     NVS_CHECK(nvs_set_str(nvs_arg, "refresh token", _refresh_token.c_str()));
     // NVS_CHECK(nvs_set_str(nvs_arg, "ssid", global_wifi_ssid.c_str()));
     // NVS_CHECK(nvs_set_str(nvs_arg, "pswd", global_wifi_password.c_str()));
@@ -592,10 +599,10 @@ esp_err_t Azure::saveData()
 
 esp_err_t Azure::loadData()
 {
-    char databuf[2048];
+    char databuf[5096];
     int64_t expire_time = 0;
 
-    size_t length = 1024;
+    size_t length = 5096;
     nvs_handle nvs_arg;
     NVS_CHECK(nvs_open("azure data", NVS_READONLY, &nvs_arg));
     NVS_CHECK(nvs_get_str(nvs_arg, "refresh token", databuf, &length));

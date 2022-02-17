@@ -185,8 +185,13 @@ int Frame_Todo::run()
 
     if(M5.BtnR.wasReleased())
     {
+        log_d("btnr Rel A\n\r");
+                            log_d("btnr Rel b\t %d \t - %d\n\r", _current_page, _page_num);
+
         if(_current_page != _page_num)
         {
+                    log_d("btnr Rel b\t %d \t - %d\n\r", _current_page, _page_num);
+
             _current_page++;
             EPDGUI_Clear();
             EPDGUI_AddObject(_key_exit);
@@ -194,11 +199,15 @@ int Frame_Todo::run()
             int end = _keys.size() > (_current_page * MAX_ITEM_NUM) ? (_current_page * MAX_ITEM_NUM) : _keys.size();
             for(int i = start; i < end; i++)
             {
+                                    log_d("btnr Rel czt %d\n\r",i);
+
+
                 EPDGUI_AddObject(_keys[i]);
             }
             M5.EPD.FillPartGram4bpp(0, 72, 540, 888, 0xFFFF);
             EPDGUI_Draw(UPDATE_MODE_NONE);
             M5.EPD.UpdateFull(UPDATE_MODE_GC16);
+            //_is_update = true;
         }
     }
     if(M5.BtnL.wasReleased())
@@ -217,6 +226,7 @@ int Frame_Todo::run()
             M5.EPD.FillPartGram4bpp(0, 72, 540, 888, 0xFFFF);
             EPDGUI_Draw(UPDATE_MODE_NONE);
             M5.EPD.UpdateFull(UPDATE_MODE_GC16);
+            //_is_update = true;
         }
     }
     if(M5.BtnP.wasReleased())

@@ -82,6 +82,12 @@ int Frame_TodoLogin::run()
             _canvas->setTextLineSpace(6);
             _canvas->setTextArea(40, kDescriptionY, 460, 300);
             _canvas->print("Use a browser or scan the QR code to open the page " + url + " and enter the code to authenticate.");
+            //pinMode(G39,INPUT);
+
+            _canvas->pushCanvas(0, 72, UPDATE_MODE_GL16);
+
+          
+
         }
 
         LoadingAnime_32x32_Stop();
@@ -89,12 +95,13 @@ int Frame_TodoLogin::run()
     }
     else
     {
-        if(millis() - _last_update_time > 2000)
+        if(millis() - _last_update_time > 120000)
         {
             _last_update_time = millis();
             esp_err_t ret = azure.getAuthorizationStatus();
             if(ret == Azure::AUTH_STATUS_PENDING)
             {
+                log_d("auth pending\n\r");
                 return 1;
             }
 
@@ -133,6 +140,7 @@ int Frame_TodoLogin::run()
                 M5.EPD.UpdateFull(UPDATE_MODE_GC16);
                 return 1;
             }
+            log_d("%d",GetTimeZone());
             azure.begin(GetTimeZone());
             EPDGUI_PopFrame(true);
             Frame_Base *frame = new Frame_TodoList();

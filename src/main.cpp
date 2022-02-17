@@ -194,5 +194,6 @@ void setup()
 
 void loop()
 {
+    EPDGUI_SetAutoUpdate(true);
     EPDGUI_MainLoop();
 }
